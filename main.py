@@ -31,14 +31,33 @@ movies_df.to_sql('movies', conn, if_exists='append', index=False)
 conn.commit()
 
 def calculate_similarity(movie_id1, movie_id2):
-    cur.execute('''SELECT AVG(r1.rating), AVG(r2.rating)
+    cur.execute('''SELECT r1.rating, r2.rating
                    FROM ratings r1
                    JOIN ratings r2 ON r1.user_id = r2.user_id
                    WHERE r1.movie_id = ? AND r2.movie_id = ?''', (movie_id1, movie_id2))
-    row = cur.fetchone()
-    if row[0] is None or row[1] is None:
+    rows = cur.fetchall()
+    
+    ratings1 = [row[0] for row in rows]
+    ratings2 = [row[1] for row in rows]
+    
+    if not ratings1 or not ratings2:
         return 0, 0
-    return row[0], row[1]
+    
+    # Calculate Pearson correlation coefficient
+    mean_rating1 = sum(ratings1) / len(ratings1)
+    mean_rating2 = sum(ratings2) / len(ratings2)
+    
+    numerator = sum((x - mean_rating1) * (y - mean_rating2) for x, y in zip(ratings1, ratings2))
+    denominator1 = sum((x - mean_rating1) ** 2 for x in ratings1)
+    denominator2 = sum((y - mean_rating2) ** 2 for y in ratings2)
+    
+    if denominator1 == 0 or denominator2 == 0:
+        return 0, 0
+    
+    correlation = numerator / ((denominator1 ** 0.5) * (denominator2 ** 0.5))
+    
+    return correlation, len(ratings1)  # Return correlation and number of ratings for normalization
+
 
 
 def recommend_movies(movie_id, num_recommendations=5):
@@ -64,10 +83,11 @@ def recommend_movies(movie_id, num_recommendations=5):
     return recommended_movies
 
 # Example: recommend movies similar to movie with id=1
-recommendations = recommend_movies(1)
+id=int(input('Enter the movie-id: '))
+recommendations = recommend_movies(id)
 print("Recommended Movies:")
 for movie, score in recommendations:
-    print(f"{movie} (Similarity Score: {score}")
+    print(f"{movie} (Similarity Score: {score: .2f}")
 
 # Close connection
 conn.close()
