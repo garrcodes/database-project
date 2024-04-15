@@ -93,8 +93,19 @@ def on_recommend():
 root = tk.Tk()
 root.title("Movie Recommendation System")
 
-frame = ttk.Frame(root, padding="20")
-frame.grid(column=0, row=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+# Customizing the style
+style = ttk.Style()
+style.theme_use("clam")
+style.configure("TButton", foreground="black", background="#ffd700", font=("Helvetica", 12, "bold"))
+style.configure("TLabel", foreground="black", background="#f0f0f0", font=("Helvetica", 12))
+style.configure("TEntry", foreground="black", background="white", font=("Helvetica", 12))
+style.configure("TText", foreground="black", background="white", font=("Helvetica", 12))
+
+# Setting background color
+root.configure(bg="#ffe6e6")
+
+frame = ttk.Frame(root)
+frame.grid(column=0, row=0, padx=20, pady=20)
 
 movie_id_label = ttk.Label(frame, text="Enter Movie ID:")
 movie_id_label.grid(column=0, row=0, sticky=tk.W)
