@@ -1,3 +1,5 @@
+import tkinter as tk
+from tkinter import ttk
 import sqlite3
 import pandas as pd
 
@@ -58,8 +60,6 @@ def calculate_similarity(movie_id1, movie_id2):
     
     return correlation, len(ratings1)  # Return correlation and number of ratings for normalization
 
-
-
 def recommend_movies(movie_id, num_recommendations=5):
     cur.execute('''SELECT DISTINCT movie_id
                    FROM ratings
@@ -82,12 +82,33 @@ def recommend_movies(movie_id, num_recommendations=5):
     
     return recommended_movies
 
-# Example: recommend movies similar to movie with id=1
-id=int(input('Enter the movie-id: '))
-recommendations = recommend_movies(id)
-print("Recommended Movies:")
-for movie, score in recommendations:
-    print(f"{movie} (Similarity Score: {score: .2f}")
+def on_recommend():
+    movie_id = int(movie_id_entry.get())
+    recommendations = recommend_movies(movie_id)
+    recommendation_text.delete(1.0, tk.END)  # Clear previous recommendations
+    for movie, score in recommendations:
+        recommendation_text.insert(tk.END, f"{movie} (Similarity Score: {score: .2f}\n")
+
+# GUI setup
+root = tk.Tk()
+root.title("Movie Recommendation System")
+
+frame = ttk.Frame(root, padding="20")
+frame.grid(column=0, row=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+
+movie_id_label = ttk.Label(frame, text="Enter Movie ID:")
+movie_id_label.grid(column=0, row=0, sticky=tk.W)
+
+movie_id_entry = ttk.Entry(frame, width=10)
+movie_id_entry.grid(column=1, row=0)
+
+recommend_button = ttk.Button(frame, text="Recommend", command=on_recommend)
+recommend_button.grid(column=2, row=0)
+
+recommendation_text = tk.Text(frame, wrap=tk.WORD, height=10, width=50)
+recommendation_text.grid(column=0, row=1, columnspan=3, sticky=(tk.W, tk.E))
+
+root.mainloop()
 
 # Close connection
 conn.close()
